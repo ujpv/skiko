@@ -94,7 +94,7 @@ internal class Direct3DSwingRedrawer(
             throw RenderException("Couldn't read pixels")
         }
 
-        swingOffscreenDrawer.draw(g, bytesToDraw, surface.width, surface.height)
+        swingOffscreenDrawer.draw(g, texturePtr, surface.width, surface.height)
     }
 
     private fun makeRenderTarget() = BackendRenderTarget(

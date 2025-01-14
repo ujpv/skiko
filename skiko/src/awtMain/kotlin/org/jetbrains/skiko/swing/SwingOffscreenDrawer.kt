@@ -29,26 +29,41 @@ internal class SwingOffscreenDrawer(
      * @param width width of rendered picture in real pixels
      * @param height height of rendered picture in real pixels
      */
-    fun draw(g: Graphics2D, bytes: ByteArray, width: Int, height: Int) {
-        val dirtyRectangles = listOf(
-            Rectangle(0, 0, width, height)
-        )
-        val image = createImageFromBytes(bytes, width, height, dirtyRectangles)
+    fun draw(g: Graphics2D, pTexture: Long, width: Int, height: Int) {
+        println("Scale: ${g.transform.scaleX}")
         var vi = volatileImage
+        if (vi == null || vi.width != swingLayerProperties.width || vi.height != swingLayerProperties.height) {
+            vi = createVolatileImage()
+            volatileImage = vi
+        }
 
-        do {
-            if (vi == null || vi.width != swingLayerProperties.width || vi.height != swingLayerProperties.height) {
-                vi = createVolatileImage(image)
-            }
-            drawVolatileImage(vi, image)
-            when (vi.validate(swingLayerProperties.graphicsConfiguration)) {
-                VolatileImage.IMAGE_RESTORED -> drawVolatileImage(vi, image)
-                VolatileImage.IMAGE_INCOMPATIBLE -> vi = createVolatileImage(image)
-            }
-            g.drawImage(vi, 0, 0, null)
-        } while (vi!!.contentsLost())
+        renderQueueFlushAndInvokeNow {
+            val pVolatileImageTexture = getVolatileImageTexture(vi)
+            copyTexture(pVolatileImageTexture, pTexture)
+        }
 
-        volatileImage = vi
+        g.drawImage(vi, 0, 0, null)
+
+
+//        val dirtyRectangles = listOf(
+//            Rectangle(0, 0, width, height)
+//        )
+//        val image = createImageFromBytes(bytes, width, height, dirtyRectangles)
+//        var vi = volatileImage
+//
+//        do {
+//            if () {
+//                vi = createVolatileImage(image)
+//            }
+//            drawVolatileImage(vi, image)
+//            when (vi.validate(swingLayerProperties.graphicsConfiguration)) {
+//                VolatileImage.IMAGE_RESTORED -> drawVolatileImage(vi, image)
+//                VolatileImage.IMAGE_INCOMPATIBLE -> vi = createVolatileImage(image)
+//            }
+//            g.drawImage(vi, 0, 0, null)
+//        } while (vi!!.contentsLost())
+//
+//        volatileImage = vi
     }
 
     private fun createImageFromBytes(
@@ -90,13 +105,12 @@ internal class SwingOffscreenDrawer(
         return image
     }
 
-    private fun createVolatileImage(image: BufferedImage): VolatileImage {
+    private fun createVolatileImage(): VolatileImage {
         val vi = swingLayerProperties.graphicsConfiguration.createCompatibleVolatileImage(
             swingLayerProperties.width,
             swingLayerProperties.height,
             Transparency.TRANSLUCENT
         )
-        drawVolatileImage(vi, image)
         return vi
     }
 
@@ -285,4 +299,9 @@ internal class SwingOffscreenDrawer(
             }
         }
     }
+
+    external fun renderQueueFlushAndInvokeNow(r: Runnable)
+    external fun copyTexture(pSrcTexture: Long, pDstTexture: Long)
+    external fun scaleTexture(pDstTexture: Long, pSrcTexture: Long)
+    external fun getVolatileImageTexture(vou: VolatileImage): Long
 }

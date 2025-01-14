@@ -58,6 +58,7 @@ internal class MetalSwingRedrawer(
         autoreleasepool {
             autoCloseScope {
                 texturePtr = makeMetalTexture(adapter.ptr, texturePtr, width, height)
+                println("allocate: ${texturePtr}")
                 val renderTarget = makeRenderTarget().autoClose()
                 val surface = Surface.makeFromBackendRenderTarget(
                     context,
@@ -82,18 +83,8 @@ internal class MetalSwingRedrawer(
         val width = surface.width
         val height = surface.height
 
-        val dstRowBytes = width * 4
-        if (storage.width != width || storage.height != height) {
-            storage.allocPixelsFlags(ImageInfo.makeS32(width, height, ColorAlphaType.PREMUL), false)
-            bytesToDraw = ByteArray(storage.getReadPixelsArraySize(dstRowBytes = dstRowBytes))
-        }
-        // TODO: it copies pixels from GPU to CPU, so it is really slow
-        surface.readPixels(storage, 0, 0)
-
-        val successfulRead = storage.readPixels(bytesToDraw, dstRowBytes = dstRowBytes)
-        if (successfulRead) {
-            swingOffscreenDrawer.draw(g, bytesToDraw, width, height)
-        }
+        println("draw: $texturePtr")
+        swingOffscreenDrawer.draw(g, texturePtr, width, height)
     }
 
     override fun rendererInfo(): String {
