@@ -1,8 +1,10 @@
 package SkiaAwtSample
 
 import kotlinx.coroutines.*
+import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.PixelGeometry
 import org.jetbrains.skiko.*
+import org.jetbrains.skiko.swing.SkiaSwingLayer
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Toolkit
@@ -33,8 +35,26 @@ fun createWindow(title: String, exitOnClose: Boolean) = SwingUtilities.invokeLat
         RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_VBGR -> PixelGeometry.BGR_V
         else -> PixelGeometry.UNKNOWN
     }
-    val skiaLayer = SkiaLayer(pixelGeometry = pixelGeometry)
-    val clocks = ClocksAwt(skiaLayer)
+//    val skiaLayer = SkiaLayer(pixelGeometry = pixelGeometry)
+    lateinit var skiaLayer: SkiaSwingLayer
+    lateinit var clocks: ClocksAwt
+    var fpsCounter = FPSCounter(logOnTick = true)
+    val scaleProvider = { skiaLayer.graphicsConfiguration.defaultTransform.scaleX.toFloat() }
+    skiaLayer = SkiaSwingLayer(object : SkikoRenderDelegate {
+        override fun onRender(
+            canvas: Canvas,
+            width: Int,
+            height: Int,
+            nanoTime: Long
+        ) {
+            fpsCounter.tick()
+            val scale = scaleProvider()
+            canvas.scale(scale, scale)
+            clocks.onRender(canvas, width, height, nanoTime)
+            skiaLayer.repaint()
+        }
+    })
+    clocks = ClocksAwt(scaleProvider)
 
     val window = JFrame(title)
     window.defaultCloseOperation =
@@ -50,46 +70,46 @@ fun createWindow(title: String, exitOnClose: Boolean) = SwingUtilities.invokeLat
     val miFullscreenState = JMenuItem("Is fullscreen mode")
     val ctrlI = KeyStroke.getKeyStroke(KeyEvent.VK_I, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
     miFullscreenState.setAccelerator(ctrlI)
-    miFullscreenState.addActionListener(object : ActionListener {
-        override fun actionPerformed(actionEvent: ActionEvent?) {
-            println("${window.title} is in fullscreen mode: ${skiaLayer.fullscreen}")
-        }
-    })
+//    miFullscreenState.addActionListener(object : ActionListener {
+//        override fun actionPerformed(actionEvent: ActionEvent?) {
+//            println("${window.title} is in fullscreen mode: ${skiaLayer.fullscreen}")
+//        }
+//    })
 
     val miToggleFullscreen = JMenuItem("Toggle fullscreen")
     val ctrlF = KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
     miToggleFullscreen.setAccelerator(ctrlF)
-    miToggleFullscreen.addActionListener(object : ActionListener {
-        override fun actionPerformed(actionEvent: ActionEvent?) {
-            skiaLayer.fullscreen = !skiaLayer.fullscreen
-        }
-    })
+//    miToggleFullscreen.addActionListener(object : ActionListener {
+//        override fun actionPerformed(actionEvent: ActionEvent?) {
+//            skiaLayer.fullscreen = !skiaLayer.fullscreen
+//        }
+//    })
 
     val defaultScreenshotPath =
         Files.createTempFile("compose_", ".png").toAbsolutePath().toString()
     val miTakeScreenshot = JMenuItem("Take screenshot to $defaultScreenshotPath")
     val ctrlS = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
     miTakeScreenshot.setAccelerator(ctrlS)
-    miTakeScreenshot.addActionListener(object : ActionListener {
-        override fun actionPerformed(actionEvent: ActionEvent?) {
-            val screenshot = skiaLayer.screenshot()!!
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch(Dispatchers.IO) {
-                val image = screenshot.toBufferedImage()
-                ImageIO.write(image, "png", File(defaultScreenshotPath))
-                println("Saved to $defaultScreenshotPath")
-            }
-        }
-    })
+//    miTakeScreenshot.addActionListener(object : ActionListener {
+//        override fun actionPerformed(actionEvent: ActionEvent?) {
+//            val screenshot = skiaLayer.screenshot()!!
+//            @OptIn(DelicateCoroutinesApi::class)
+//            GlobalScope.launch(Dispatchers.IO) {
+//                val image = screenshot.toBufferedImage()
+//                ImageIO.write(image, "png", File(defaultScreenshotPath))
+//                println("Saved to $defaultScreenshotPath")
+//            }
+//        }
+//    })
 
     val miDpiState = JMenuItem("Get current DPI")
     val ctrlD = KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
     miDpiState.setAccelerator(ctrlD)
-    miDpiState.addActionListener(object : ActionListener {
-        override fun actionPerformed(actionEvent: ActionEvent?) {
-            println("DPI: ${skiaLayer.currentDPI}")
-        }
-    })
+//    miDpiState.addActionListener(object : ActionListener {
+//        override fun actionPerformed(actionEvent: ActionEvent?) {
+//            println("DPI: ${skiaLayer.currentDPI}")
+//        }
+//    })
 
     fileMenu.add(miToggleFullscreen)
     fileMenu.add(miFullscreenState)
@@ -111,12 +131,12 @@ fun createWindow(title: String, exitOnClose: Boolean) = SwingUtilities.invokeLat
 
     window.setJMenuBar(menuBar)
 
-    skiaLayer.onStateChanged(SkiaLayer.PropertyKind.Renderer) { layer ->
-        println("Changed renderer for $layer: new value is ${layer.renderApi}")
-    }
+//    skiaLayer.onStateChanged(SkiaLayer.PropertyKind.Renderer) { layer ->
+//        println("Changed renderer for $layer: new value is ${layer.renderApi}")
+//    }
 
-    skiaLayer.renderDelegate = SkiaLayerRenderDelegate(skiaLayer, clocks)
-    skiaLayer.addMouseMotionListener(clocks)
+//    skiaLayer.renderDelegate = SkiaLayerRenderDelegate(skiaLayer, clocks)
+//    skiaLayer.addMouseMotionListener(clocks)
 
     // Window transparency
     if (System.getProperty("skiko.transparency") == "true") {
@@ -134,7 +154,7 @@ fun createWindow(title: String, exitOnClose: Boolean) = SwingUtilities.invokeLat
         if (hostOs != OS.Windows || skiaLayer.renderApi == GraphicsApi.DIRECT3D) {
             window.background = Color(0, 0, 0, 0)
         }
-        skiaLayer.transparency = true
+//        skiaLayer.transparency = true
 
         /*
          * Windows makes clicks on transparent pixels fall through, but it doesn't work
@@ -155,7 +175,7 @@ fun createWindow(title: String, exitOnClose: Boolean) = SwingUtilities.invokeLat
     // MANDATORY: set window preferred size before calling pack()
     window.preferredSize = Dimension(800, 600)
     window.pack()
-    skiaLayer.disableTitleBar(64f)
+//    skiaLayer.disableTitleBar(64f)
     window.pack()
     skiaLayer.paint(window.graphics)
     window.isVisible = true
