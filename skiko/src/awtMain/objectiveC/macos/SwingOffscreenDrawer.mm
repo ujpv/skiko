@@ -8,7 +8,6 @@
 #import <ImageIO/ImageIO.h>
 #import <CoreFoundation/CoreFoundation.h>
 
-
 #include <iostream>
 
 extern "C"
@@ -79,73 +78,6 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_rende
     }
   }
 
-/*
- * Class:     org_jetbrains_skiko_swing_SwingOffscreenDrawer
- * Method:    copyTexture
- * Signature: (JJ)V
- */
-// JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyTexture
-//   (JNIEnv *env, jobject, jlong pSrc, jlong pDst) {
-//        if (!pSrc || !pDst) {
-//             NSLog(@"Error: Invalid texture pointers.");
-//             return;
-//         }
-//
-//         id<MTLTexture> srcTexture = (__bridge id <MTLTexture>) (void *) pSrc;
-//         id<MTLTexture> dstTexture = (__bridge id <MTLTexture>) (void *) pDst;
-//         NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu", (unsigned long)srcTexture.width, (unsigned long)srcTexture.height, (unsigned long)srcTexture.pixelFormat);
-//         NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu", (unsigned long)dstTexture.width, (unsigned long)dstTexture.height, (unsigned long)dstTexture.pixelFormat);
-//
-//         if (!srcTexture || !dstTexture || srcTexture.device != dstTexture.device) {
-//             NSLog(@"Error: Invalid Metal textures or mismatched devices.");
-//             return;
-//         }
-//
-// //        if (srcTexture.width != dstTexture.width || srcTexture.height != dstTexture.height) {
-// //            NSLog(@"Error: Source and destination texture dimensions do not match.");
-// //            return JNI_FALSE;
-// //        }
-//
-//         //@autoreleasepool {
-//             id<MTLCommandQueue> commandQueue = [srcTexture.device newCommandQueue];
-//             if (!commandQueue) {
-//                 NSLog(@"Error: Failed to create Metal command queue.");
-//                 return;
-//             }
-//
-//             id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
-//             if (!commandBuffer) {
-//                 NSLog(@"Error: Failed to create Metal command buffer.");
-//                 return;
-//             }
-//
-//             id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
-//             if (!blitEncoder) {
-//                 NSLog(@"Error: Failed to create Metal blit command encoder.");
-//                 return;
-//             }
-//
-//             MTLSize size = MTLSizeMake(srcTexture.width, srcTexture.height, 1);
-//             [blitEncoder copyFromTexture:srcTexture
-//                              sourceSlice:0
-//                              sourceLevel:0
-//                             sourceOrigin:MTLOriginMake(0, 0, 0)
-//                               sourceSize:size
-//                                toTexture:dstTexture
-//                         destinationSlice:0
-//                         destinationLevel:0
-//                        destinationOrigin:MTLOriginMake(0, 0, 0)];
-//
-//             [blitEncoder endEncoding];
-//             [commandBuffer commit];
-//             [commandBuffer waitUntilCompleted];
-//
-//             if (commandBuffer.error) {
-//                 NSLog(@"Error: Command buffer failed with error: %@", commandBuffer.error);
-//                 return;
-//             }
-//         // }
-//   }
 JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyTexture
   (JNIEnv *env, jobject, jlong pSrc, jlong pDst) {
        if (!pSrc || !pDst) {
@@ -156,12 +88,12 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
         id<MTLTexture> srcTexture = (__bridge id <MTLTexture>) (void *) pSrc;
         id<MTLTexture> dstTexture = (__bridge id <MTLTexture>) (void *) pDst;
 
-        NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
-              (unsigned long)srcTexture.width, (unsigned long)srcTexture.height,
-              (unsigned long)srcTexture.pixelFormat, (long)srcTexture.storageMode);
-        NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
-              (unsigned long)dstTexture.width, (unsigned long)dstTexture.height,
-              (unsigned long)dstTexture.pixelFormat, (long)dstTexture.storageMode);
+//         NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
+//               (unsigned long)srcTexture.width, (unsigned long)srcTexture.height,
+//               (unsigned long)srcTexture.pixelFormat, (long)srcTexture.storageMode);
+//         NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
+//               (unsigned long)dstTexture.width, (unsigned long)dstTexture.height,
+//               (unsigned long)dstTexture.pixelFormat, (long)dstTexture.storageMode);
 
         if (!srcTexture || !dstTexture || srcTexture.device != dstTexture.device) {
             NSLog(@"Error: Invalid Metal textures or mismatched devices.");
@@ -178,10 +110,10 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
                     return;
                 }
 
-        NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu",
-            (unsigned long)srcTexture.width, (unsigned long)srcTexture.height, (unsigned long)srcTexture.pixelFormat);
-        NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
-            (unsigned long)dstTexture.width, (unsigned long)dstTexture.height, (unsigned long)dstTexture.pixelFormat, (long)dstTexture.storageMode);
+//         NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu",
+//             (unsigned long)srcTexture.width, (unsigned long)srcTexture.height, (unsigned long)srcTexture.pixelFormat);
+//         NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
+//             (unsigned long)dstTexture.width, (unsigned long)dstTexture.height, (unsigned long)dstTexture.pixelFormat, (long)dstTexture.storageMode);
 
         id<MTLCommandQueue> commandQueue = [srcTexture.device newCommandQueue];
         if (!commandQueue) {
@@ -221,7 +153,7 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
             return;
         }
 
-        NSLog(@"Blit operation completed successfully.");
+//         NSLog(@"Blit operation completed successfully.");
   }
 
 /*
@@ -312,7 +244,7 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_getV
             return 0;
         }
 
-        NSLog(@"Successfully retrieved Metal texture pointer: %ld", texturePointer);
+//         NSLog(@"Successfully retrieved Metal texture pointer: %ld", texturePointer);
         return texturePointer;
     }
 

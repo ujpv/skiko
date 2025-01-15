@@ -58,7 +58,6 @@ internal class MetalSwingRedrawer(
         autoreleasepool {
             autoCloseScope {
                 texturePtr = makeMetalTexture(adapter.ptr, texturePtr, width, height)
-                println("allocate: ${texturePtr}")
                 val renderTarget = makeRenderTarget().autoClose()
                 val surface = Surface.makeFromBackendRenderTarget(
                     context,
@@ -83,7 +82,6 @@ internal class MetalSwingRedrawer(
         val width = surface.width
         val height = surface.height
 
-        println("draw: $texturePtr")
         swingOffscreenDrawer.draw(g, texturePtr, width, height)
     }
 
