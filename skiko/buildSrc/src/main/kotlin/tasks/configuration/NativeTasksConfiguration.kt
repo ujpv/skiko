@@ -116,7 +116,10 @@ fun SkikoProjectContext.compileNativeBridgesTask(
             }
             OS.MacOS -> {
                 flags.set(listOf(
-                    *buildType.clangFlags,
+//                    *buildType.clangFlags,
+                    "-std=c++17",
+                    "-O0",
+                    "-g",
                     *skiaPreprocessorFlags(OS.MacOS, buildType),
                     when(arch) {
                         Arch.Arm64 -> "-arch arm64"

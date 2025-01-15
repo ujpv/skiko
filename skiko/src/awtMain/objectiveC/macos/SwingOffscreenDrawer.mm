@@ -87,8 +87,8 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
             return;
         }
 
-        id<MTLTexture> srcTexture = (__bridge_transfer id <MTLTexture>) (void *) pSrc;
-        id<MTLTexture> dstTexture = (__bridge_transfer id <MTLTexture>) (void *)pDst;
+        id<MTLTexture> srcTexture = (__bridge id <MTLTexture>) (void *) pSrc;
+        id<MTLTexture> dstTexture = (__bridge id <MTLTexture>) (void *) pDst;
 
         if (!srcTexture || !dstTexture || srcTexture.device != dstTexture.device) {
             NSLog(@"Error: Invalid Metal textures or mismatched devices.");
@@ -100,7 +100,7 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
 //            return JNI_FALSE;
 //        }
 
-        @autoreleasepool {
+        //@autoreleasepool {
             id<MTLCommandQueue> commandQueue = [srcTexture.device newCommandQueue];
             if (!commandQueue) {
                 NSLog(@"Error: Failed to create Metal command queue.");
@@ -138,7 +138,7 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
                 NSLog(@"Error: Command buffer failed with error: %@", commandBuffer.error);
                 return;
             }
-        }
+        // }
   }
 
 /*
@@ -231,5 +231,22 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_getV
 
         NSLog(@"Successfully retrieved Metal texture pointer: %ld", texturePointer);
         return texturePointer;
+    }
+
+    JNIEXPORT jobject JNICALL
+    Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_getTextureSize(JNIEnv* env, jobject obj, jlong ptr) {
+        id<MTLTexture> texture = (__bridge id <MTLTexture>) (void *) ptr;
+
+        jclass dimensionClass = env->FindClass("java/awt/Dimension");
+        if (!dimensionClass) {
+            return nullptr;
+        }
+
+        jmethodID constructor = env->GetMethodID(dimensionClass, "<init>", "(II)V");
+        if (!constructor) {
+            return nullptr; // Constructor not found
+        }
+
+        return env->NewObject(dimensionClass, constructor, texture.width, texture.height);
     }
 }

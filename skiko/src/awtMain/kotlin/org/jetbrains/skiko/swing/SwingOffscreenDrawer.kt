@@ -34,15 +34,18 @@ internal class SwingOffscreenDrawer(
         var vi = volatileImage
         if (vi == null || vi.width != swingLayerProperties.width || vi.height != swingLayerProperties.height) {
             vi = createVolatileImage()
-            volatileImage = vi
         }
 
+        val pVolatileImageTexture = getVolatileImageTexture(vi)
+        println("VI Size: ${getTextureSize(pVolatileImageTexture)}")
+        println("pTexture size: ${getTextureSize(pTexture)}")
         renderQueueFlushAndInvokeNow {
-            val pVolatileImageTexture = getVolatileImageTexture(vi)
             copyTexture(pVolatileImageTexture, pTexture)
         }
 
         g.drawImage(vi, 0, 0, null)
+
+        volatileImage = vi
 
 
 //        val dirtyRectangles = listOf(
@@ -304,4 +307,5 @@ internal class SwingOffscreenDrawer(
     external fun copyTexture(pSrcTexture: Long, pDstTexture: Long)
     external fun scaleTexture(pDstTexture: Long, pSrcTexture: Long)
     external fun getVolatileImageTexture(vou: VolatileImage): Long
+    external fun getTextureSize(pTexture: Long): Dimension
 }
