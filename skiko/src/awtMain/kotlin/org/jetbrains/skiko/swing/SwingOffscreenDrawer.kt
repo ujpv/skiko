@@ -39,25 +39,7 @@ internal class SwingOffscreenDrawer(
             val pVolatileImageTexture = getVolatileImageTexture(vi!!)
             copyTexture(pTexture, pVolatileImageTexture)
         }
-
-        do {
-            when (vi!!.validate(swingLayerProperties.graphicsConfiguration)) {
-                VolatileImage.IMAGE_RESTORED -> {
-                    renderQueueFlushAndInvokeNow {
-                        val pVolatileImageTexture = getVolatileImageTexture(vi!!)
-                        copyTexture(pTexture, pVolatileImageTexture)
-                    }
-                }
-                VolatileImage.IMAGE_INCOMPATIBLE ->  {
-                    vi = createVolatileImage()
-                    renderQueueFlushAndInvokeNow {
-                        val pVolatileImageTexture = getVolatileImageTexture(vi)
-                        copyTexture(pTexture, pVolatileImageTexture)
-                    }
-                }
-            }
-            g.drawImage(vi, 0, 0, null)
-        } while (vi!!.contentsLost())
+        g.drawImage(vi, 0, 0, null)
 
         volatileImage = vi
     }

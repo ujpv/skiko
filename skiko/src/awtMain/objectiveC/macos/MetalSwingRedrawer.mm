@@ -46,23 +46,6 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_MetalSwingRedrawer_makeMe
             textureDescriptor.storageMode = MTLStorageModeShared;
 
             metalTexture = [adapter newTextureWithDescriptor:textureDescriptor];
-
-//             // Fill the texture with red
-//             id<MTLCommandQueue> commandQueue = [adapter newCommandQueue];
-//             id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
-//
-//             id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
-//             if (blitEncoder) {
-//                 MTLSize size = MTLSizeMake(width, height, 1);
-//                 uint8_t redPixel[4] = {255, 0, 0, 255}; // RGBA Red Pixel
-//                 id<MTLBuffer> redBuffer = [adapter newBufferWithBytes:&redPixel length:4 options:MTLResourceStorageModeShared];
-//                 [blitEncoder fillBuffer:redBuffer range:NSMakeRange(0, 4) value:redPixel[0]];
-//
-//                 [blitEncoder endEncoding];
-//                 [commandBuffer commit];
-//                 [commandBuffer waitUntilCompleted];
-//             }
-
         } else {
             metalTexture = oldTexture;
         }

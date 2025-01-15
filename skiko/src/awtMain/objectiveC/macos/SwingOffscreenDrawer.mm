@@ -270,7 +270,6 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_getV
         JNIEnv *env, jobject obj, jlong pDstTexture, jstring pDstPath
     ) {
         @autoreleasepool {
-            // Cast the destination texture pointer to MTLTexture
             id<MTLTexture> dstTexture = (__bridge id<MTLTexture>)(void *)pDstTexture;
 
             if (!dstTexture) {
@@ -290,7 +289,6 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_getV
             // Release the native C string allocated by GetStringUTFChars
             env->ReleaseStringUTFChars(pDstPath, dstPathChars); // Use dot notation here
 
-            // Ensure the texture is readable
 //             if (dstTexture.pixelFormat != MTLPixelFormatBGRA8Unorm || dstTexture.storageMode != MTLStorageModeShared) {
 //                 NSLog(@"Error: Texture format or storage mode not supported for saving.");
 //                 return;
