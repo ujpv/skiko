@@ -37,7 +37,14 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_MetalSwingRedrawer_makeMe
         id <MTLTexture> metalTexture;
         if (oldTexture == nil || oldTexture.width != width || oldTexture.height != height) {
             id <MTLDevice> adapter = (__bridge id <MTLDevice>) (void *) adapterPtr;
-            MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:width height:height mipmapped:NO];
+            MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor
+                texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                width:width
+                height:height
+                mipmapped:NO];
+            textureDescriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite; // Add usage flags to allow rendering
+            textureDescriptor.storageMode = MTLStorageModeShared;
+
             metalTexture = [adapter newTextureWithDescriptor:textureDescriptor];
         } else {
             metalTexture = oldTexture;
