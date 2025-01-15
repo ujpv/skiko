@@ -36,14 +36,34 @@ internal class SwingOffscreenDrawer(
             vi = createVolatileImage()
         }
 
-        val pVolatileImageTexture = getVolatileImageTexture(vi)
-        println("VI Size: ${getTextureSize(pVolatileImageTexture)}")
-        println("pTexture size: ${getTextureSize(pTexture)}")
+        saveTexture(pTexture, "/Users/Vladimir.Kharitonov/develop/skiko/a.png")
+
         renderQueueFlushAndInvokeNow {
-            copyTexture(pVolatileImageTexture, pTexture)
+            val pVolatileImageTexture = getVolatileImageTexture(vi!!)
+            copyTexture(pTexture, pVolatileImageTexture)
+            saveTexture(pVolatileImageTexture, "/Users/Vladimir.Kharitonov/develop/skiko/b.png")
         }
 
-        g.drawImage(vi, 0, 0, null)
+
+
+        do {
+            when (vi!!.validate(swingLayerProperties.graphicsConfiguration)) {
+                VolatileImage.IMAGE_RESTORED -> {
+                    renderQueueFlushAndInvokeNow {
+                        val pVolatileImageTexture = getVolatileImageTexture(vi!!)
+                        copyTexture(pTexture, pVolatileImageTexture)
+                    }
+                }
+                VolatileImage.IMAGE_INCOMPATIBLE ->  {
+                    vi = createVolatileImage()
+                    renderQueueFlushAndInvokeNow {
+                        val pVolatileImageTexture = getVolatileImageTexture(vi)
+                        copyTexture(pTexture, pVolatileImageTexture)
+                    }
+                }
+            }
+            g.drawImage(vi, 0, 0, null)
+        } while (vi!!.contentsLost())
 
         volatileImage = vi
 
@@ -114,6 +134,12 @@ internal class SwingOffscreenDrawer(
             swingLayerProperties.height,
             Transparency.TRANSLUCENT
         )
+
+        val g = vi.graphics as Graphics2D
+        g.color = Color.YELLOW
+        g.fillRect(0, 0, swingLayerProperties.width, swingLayerProperties.height)
+        g.dispose()
+
         return vi
     }
 
@@ -308,4 +334,5 @@ internal class SwingOffscreenDrawer(
     external fun scaleTexture(pDstTexture: Long, pSrcTexture: Long)
     external fun getVolatileImageTexture(vou: VolatileImage): Long
     external fun getTextureSize(pTexture: Long): Dimension
+    external fun saveTexture(pDstTexture: Long, pDstPath: String)
 }

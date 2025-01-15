@@ -37,8 +37,32 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_MetalSwingRedrawer_makeMe
         id <MTLTexture> metalTexture;
         if (oldTexture == nil || oldTexture.width != width || oldTexture.height != height) {
             id <MTLDevice> adapter = (__bridge id <MTLDevice>) (void *) adapterPtr;
-            MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:width height:height mipmapped:NO];
+            MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor
+                texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                width:width
+                height:height
+                mipmapped:NO];
+            textureDescriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite; // Add usage flags to allow rendering
+            textureDescriptor.storageMode = MTLStorageModeShared;
+
             metalTexture = [adapter newTextureWithDescriptor:textureDescriptor];
+
+//             // Fill the texture with red
+//             id<MTLCommandQueue> commandQueue = [adapter newCommandQueue];
+//             id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+//
+//             id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
+//             if (blitEncoder) {
+//                 MTLSize size = MTLSizeMake(width, height, 1);
+//                 uint8_t redPixel[4] = {255, 0, 0, 255}; // RGBA Red Pixel
+//                 id<MTLBuffer> redBuffer = [adapter newBufferWithBytes:&redPixel length:4 options:MTLResourceStorageModeShared];
+//                 [blitEncoder fillBuffer:redBuffer range:NSMakeRange(0, 4) value:redPixel[0]];
+//
+//                 [blitEncoder endEncoding];
+//                 [commandBuffer commit];
+//                 [commandBuffer waitUntilCompleted];
+//             }
+
         } else {
             metalTexture = oldTexture;
         }

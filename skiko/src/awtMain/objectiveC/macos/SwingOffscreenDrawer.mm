@@ -4,6 +4,10 @@
 #import <Metal/Metal.h>
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import <ImageIO/ImageIO.h>
+#import <CoreFoundation/CoreFoundation.h>
+
 
 #include <iostream>
 
@@ -80,6 +84,68 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_rende
  * Method:    copyTexture
  * Signature: (JJ)V
  */
+// JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyTexture
+//   (JNIEnv *env, jobject, jlong pSrc, jlong pDst) {
+//        if (!pSrc || !pDst) {
+//             NSLog(@"Error: Invalid texture pointers.");
+//             return;
+//         }
+//
+//         id<MTLTexture> srcTexture = (__bridge id <MTLTexture>) (void *) pSrc;
+//         id<MTLTexture> dstTexture = (__bridge id <MTLTexture>) (void *) pDst;
+//         NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu", (unsigned long)srcTexture.width, (unsigned long)srcTexture.height, (unsigned long)srcTexture.pixelFormat);
+//         NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu", (unsigned long)dstTexture.width, (unsigned long)dstTexture.height, (unsigned long)dstTexture.pixelFormat);
+//
+//         if (!srcTexture || !dstTexture || srcTexture.device != dstTexture.device) {
+//             NSLog(@"Error: Invalid Metal textures or mismatched devices.");
+//             return;
+//         }
+//
+// //        if (srcTexture.width != dstTexture.width || srcTexture.height != dstTexture.height) {
+// //            NSLog(@"Error: Source and destination texture dimensions do not match.");
+// //            return JNI_FALSE;
+// //        }
+//
+//         //@autoreleasepool {
+//             id<MTLCommandQueue> commandQueue = [srcTexture.device newCommandQueue];
+//             if (!commandQueue) {
+//                 NSLog(@"Error: Failed to create Metal command queue.");
+//                 return;
+//             }
+//
+//             id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+//             if (!commandBuffer) {
+//                 NSLog(@"Error: Failed to create Metal command buffer.");
+//                 return;
+//             }
+//
+//             id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
+//             if (!blitEncoder) {
+//                 NSLog(@"Error: Failed to create Metal blit command encoder.");
+//                 return;
+//             }
+//
+//             MTLSize size = MTLSizeMake(srcTexture.width, srcTexture.height, 1);
+//             [blitEncoder copyFromTexture:srcTexture
+//                              sourceSlice:0
+//                              sourceLevel:0
+//                             sourceOrigin:MTLOriginMake(0, 0, 0)
+//                               sourceSize:size
+//                                toTexture:dstTexture
+//                         destinationSlice:0
+//                         destinationLevel:0
+//                        destinationOrigin:MTLOriginMake(0, 0, 0)];
+//
+//             [blitEncoder endEncoding];
+//             [commandBuffer commit];
+//             [commandBuffer waitUntilCompleted];
+//
+//             if (commandBuffer.error) {
+//                 NSLog(@"Error: Command buffer failed with error: %@", commandBuffer.error);
+//                 return;
+//             }
+//         // }
+//   }
 JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyTexture
   (JNIEnv *env, jobject, jlong pSrc, jlong pDst) {
        if (!pSrc || !pDst) {
@@ -90,37 +156,53 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
         id<MTLTexture> srcTexture = (__bridge id <MTLTexture>) (void *) pSrc;
         id<MTLTexture> dstTexture = (__bridge id <MTLTexture>) (void *) pDst;
 
+        NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
+              (unsigned long)srcTexture.width, (unsigned long)srcTexture.height,
+              (unsigned long)srcTexture.pixelFormat, (long)srcTexture.storageMode);
+        NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
+              (unsigned long)dstTexture.width, (unsigned long)dstTexture.height,
+              (unsigned long)dstTexture.pixelFormat, (long)dstTexture.storageMode);
+
         if (!srcTexture || !dstTexture || srcTexture.device != dstTexture.device) {
             NSLog(@"Error: Invalid Metal textures or mismatched devices.");
             return;
         }
 
-//        if (srcTexture.width != dstTexture.width || srcTexture.height != dstTexture.height) {
-//            NSLog(@"Error: Source and destination texture dimensions do not match.");
-//            return JNI_FALSE;
-//        }
+        if (srcTexture.width != dstTexture.width || srcTexture.height != dstTexture.height) {
+            NSLog(@"Error: Source and destination texture dimensions do not match.");
+            return;
+        }
 
-        //@autoreleasepool {
-            id<MTLCommandQueue> commandQueue = [srcTexture.device newCommandQueue];
-            if (!commandQueue) {
-                NSLog(@"Error: Failed to create Metal command queue.");
-                return;
-            }
+                if (srcTexture.device != dstTexture.device) {
+                    NSLog(@"Error: Source and destination textures are on different devices.");
+                    return;
+                }
 
-            id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
-            if (!commandBuffer) {
-                NSLog(@"Error: Failed to create Metal command buffer.");
-                return;
-            }
+        NSLog(@"Source Texture: Width = %lu, Height = %lu, Pixel Format = %lu",
+            (unsigned long)srcTexture.width, (unsigned long)srcTexture.height, (unsigned long)srcTexture.pixelFormat);
+        NSLog(@"Destination Texture: Width = %lu, Height = %lu, Pixel Format = %lu, StorageMode = %ld",
+            (unsigned long)dstTexture.width, (unsigned long)dstTexture.height, (unsigned long)dstTexture.pixelFormat, (long)dstTexture.storageMode);
 
-            id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
-            if (!blitEncoder) {
-                NSLog(@"Error: Failed to create Metal blit command encoder.");
-                return;
-            }
+        id<MTLCommandQueue> commandQueue = [srcTexture.device newCommandQueue];
+        if (!commandQueue) {
+            NSLog(@"Error: Failed to create Metal command queue.");
+            return;
+        }
 
-            MTLSize size = MTLSizeMake(srcTexture.width, srcTexture.height, 1);
-            [blitEncoder copyFromTexture:srcTexture
+        id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+        if (!commandBuffer) {
+            NSLog(@"Error: Failed to create Metal command buffer.");
+            return;
+        }
+
+        id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
+        if (!blitEncoder) {
+            NSLog(@"Error: Failed to create Metal blit command encoder.");
+            return;
+        }
+
+        MTLSize size = MTLSizeMake(srcTexture.width, srcTexture.height, 1);
+        [blitEncoder copyFromTexture:srcTexture
                              sourceSlice:0
                              sourceLevel:0
                             sourceOrigin:MTLOriginMake(0, 0, 0)
@@ -130,15 +212,16 @@ JNIEXPORT void JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_copyT
                         destinationLevel:0
                        destinationOrigin:MTLOriginMake(0, 0, 0)];
 
-            [blitEncoder endEncoding];
-            [commandBuffer commit];
-            [commandBuffer waitUntilCompleted];
+        [blitEncoder endEncoding];
+        [commandBuffer commit];
+        [commandBuffer waitUntilCompleted];
 
-            if (commandBuffer.error) {
-                NSLog(@"Error: Command buffer failed with error: %@", commandBuffer.error);
-                return;
-            }
-        // }
+        if (commandBuffer.error) {
+            NSLog(@"Error: Command buffer failed with error: %@", commandBuffer.error);
+            return;
+        }
+
+        NSLog(@"Blit operation completed successfully.");
   }
 
 /*
@@ -248,5 +331,127 @@ JNIEXPORT jlong JNICALL Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_getV
         }
 
         return env->NewObject(dimensionClass, constructor, texture.width, texture.height);
+    }
+
+    JNIEXPORT void JNICALL
+    Java_org_jetbrains_skiko_swing_SwingOffscreenDrawer_saveTexture(
+        JNIEnv *env, jobject obj, jlong pDstTexture, jstring pDstPath
+    ) {
+        @autoreleasepool {
+            // Cast the destination texture pointer to MTLTexture
+            id<MTLTexture> dstTexture = (__bridge id<MTLTexture>)(void *)pDstTexture;
+
+            if (!dstTexture) {
+                NSLog(@"Error: Destination Metal texture is null.");
+                return;
+            }
+
+            // Convert the provided Java String (`pDstPath`) to a native C string
+            const char *dstPathChars = env->GetStringUTFChars(pDstPath, NULL); // Use dot notation here
+            if (!dstPathChars) {
+                NSLog(@"Error: Invalid destination path.");
+                return;
+            }
+
+            NSString *dstPath = [NSString stringWithUTF8String:dstPathChars];
+
+            // Release the native C string allocated by GetStringUTFChars
+            env->ReleaseStringUTFChars(pDstPath, dstPathChars); // Use dot notation here
+
+            // Ensure the texture is readable
+//             if (dstTexture.pixelFormat != MTLPixelFormatBGRA8Unorm || dstTexture.storageMode != MTLStorageModeShared) {
+//                 NSLog(@"Error: Texture format or storage mode not supported for saving.");
+//                 return;
+//             }
+
+            // Create a buffer to hold the texture data
+            NSUInteger width = dstTexture.width;
+            NSUInteger height = dstTexture.height;
+            NSUInteger bytesPerPixel = 4; // Assuming BGRA8 or RGBA8 format (4 bytes per pixel)
+            NSUInteger bytesPerRow = width * bytesPerPixel;
+            NSUInteger bufferSize = height * bytesPerRow;
+
+            id<MTLDevice> device = dstTexture.device;
+            id<MTLBuffer> buffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
+            if (!buffer) {
+                NSLog(@"Error: Failed to create Metal buffer.");
+                return;
+            }
+
+            // Create a command queue and copy texture to buffer
+            id<MTLCommandQueue> commandQueue = [device newCommandQueue];
+            id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+            id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
+
+            [blitEncoder copyFromTexture:dstTexture
+                             sourceSlice:0
+                             sourceLevel:0
+                            sourceOrigin:MTLOriginMake(0, 0, 0)
+                              sourceSize:MTLSizeMake(width, height, 1)
+                                 toBuffer:buffer
+                           destinationOffset:0
+                      destinationBytesPerRow:bytesPerRow
+                destinationBytesPerImage:bufferSize];
+            [blitEncoder endEncoding];
+
+            [commandBuffer commit];
+            [commandBuffer waitUntilCompleted];
+
+            if (commandBuffer.error) {
+                NSLog(@"Error: Command buffer failed with error: %@", commandBuffer.error);
+                return;
+            }
+
+            // Access the copied buffer data
+            uint8_t *rawData = (uint8_t *)buffer.contents;
+
+            // Create a CoreGraphics image from the buffer
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+            CGContextRef context = CGBitmapContextCreate(
+                rawData, width, height, 8, bytesPerRow, colorSpace,
+                kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Little
+            );
+
+            if (!context) {
+                NSLog(@"Error: Failed to create CGContext.");
+                CGColorSpaceRelease(colorSpace);
+                return;
+            }
+
+            CGImageRef imageRef = CGBitmapContextCreateImage(context);
+            if (!imageRef) {
+                NSLog(@"Error: Failed to create CGImageRef.");
+                CGContextRelease(context);
+                CGColorSpaceRelease(colorSpace);
+                return;
+            }
+
+            // Save the image to the destination path
+            NSURL *dstURL = [NSURL fileURLWithPath:dstPath];
+            CGImageDestinationRef destination = CGImageDestinationCreateWithURL(
+                (__bridge CFURLRef)dstURL, kUTTypePNG, 1, NULL
+            );
+
+            if (!destination) {
+                NSLog(@"Error: Failed to create image destination.");
+                CGImageRelease(imageRef);
+                CGContextRelease(context);
+                CGColorSpaceRelease(colorSpace);
+                return;
+            }
+
+            CGImageDestinationAddImage(destination, imageRef, NULL);
+            if (!CGImageDestinationFinalize(destination)) {
+                NSLog(@"Error: Failed to finalize image destination.");
+            } else {
+                NSLog(@"Successfully saved texture to %@", dstPath);
+            }
+
+            // Cleanup
+            CFRelease(destination);
+            CGImageRelease(imageRef);
+            CGContextRelease(context);
+            CGColorSpaceRelease(colorSpace);
+        }
     }
 }
