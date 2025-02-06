@@ -1,5 +1,6 @@
 package org.jetbrains.skiko.swing
 
+import com.jetbrains.desktop.image.TextureWrapperImage
 import java.awt.*
 import java.awt.geom.AffineTransform
 import java.awt.image.*
@@ -14,9 +15,10 @@ internal class SwingOffscreenDrawer(
     private val swingLayerProperties: SwingLayerProperties
 ) {
     @Volatile
-    private var volatileImage: VolatileImage? = null
     private var bufferedImage: BufferedImage? = null
     private var bufferedImageGraphics: Graphics2D? = null
+    private var texture: Long = 0
+    private var image: Image? = null
 
     /**
      * Draws rendered image that is represented by [bytes] on [g].
@@ -30,57 +32,11 @@ internal class SwingOffscreenDrawer(
      * @param height height of rendered picture in real pixels
      */
     fun draw(g: Graphics2D, pTexture: Long, width: Int, height: Int) {
-        var vi = volatileImage
-        if (vi == null || vi.width != swingLayerProperties.width || vi.height != swingLayerProperties.height) {
-            vi = createVolatileImage()
+        if (texture != pTexture) {
+            texture = pTexture
+            image = TextureWrapperImage(swingLayerProperties.graphicsConfiguration, pTexture)
         }
-
-        renderQueueFlushAndInvokeNow {
-            val pVolatileImageTexture = getVolatileImageTexture(vi!!)
-            copyTexture(pTexture, pVolatileImageTexture)
-        }
-        g.drawImage(vi, 0, 0, null)
-
-        volatileImage = vi
-    }
-
-    private fun createImageFromBytes(
-        bytes: ByteArray,
-        width: Int,
-        height: Int,
-        dirtyRectangles: List<Rectangle>
-    ): BufferedImage {
-        val src = ByteBuffer.wrap(bytes)
-        if (bufferedImage == null || bufferedImage?.width != width || bufferedImage?.height != height) {
-            bufferedImage?.flush()
-            bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE)
-            bufferedImageGraphics = bufferedImage?.createGraphics()
-        } else {
-            bufferedImageGraphics?.clearRect(0,0, width, height)
-        }
-        val image = bufferedImage!!
-
-        val dstData = (image.raster.dataBuffer as DataBufferInt).data
-        val srcData: IntBuffer = src.order(ByteOrder.LITTLE_ENDIAN).asIntBuffer()
-        for (rect in dirtyRectangles) {
-            if (rect.width < image.width) {
-                for (line in rect.y until rect.y + rect.height) {
-                    val offset: Int = line * image.width + rect.x
-                    srcData.position(offset)[dstData, offset, min(
-                        rect.width.toDouble(),
-                        (src.capacity() - offset).toDouble()
-                    ).toInt()]
-                }
-            } else { // optimized for a buffer wide dirty rect
-                val offset: Int = rect.y * image.width
-                srcData.position(offset)[dstData, offset, min(
-                    (rect.height * image.width).toDouble(),
-                    (src.capacity() - offset).toDouble()
-                ).toInt()]
-            }
-        }
-
-        return image
+        g.drawImage(image, 0, 0, null)
     }
 
     private fun createVolatileImage(): VolatileImage {
