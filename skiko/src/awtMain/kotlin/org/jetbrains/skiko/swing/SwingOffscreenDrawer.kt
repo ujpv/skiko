@@ -6,8 +6,6 @@ import java.awt.Graphics2D
 import java.awt.Transparency
 import java.awt.image.VolatileImage
 
-// TODO: extract this code to a library and share it with JCEF implementation in IntelliJ
-//  since this code is mostly taken from intellij repository with some small changes
 internal class SwingOffscreenDrawer(
     private val swingLayerProperties: SwingLayerProperties
 ) {
