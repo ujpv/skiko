@@ -45,6 +45,7 @@ allprojects {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 kotlin {
@@ -159,6 +160,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                implementation("com.jetbrains:jbr-api:1.0.0")
             }
         }
         val commonTest by getting {
@@ -173,6 +175,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion")
+                implementation("com.jetbrains:jbr-api:1.0.0")
             }
         }
         if (supportAwt) {

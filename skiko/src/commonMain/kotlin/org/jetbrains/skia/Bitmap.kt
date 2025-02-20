@@ -1076,6 +1076,10 @@ class Bitmap internal constructor(ptr: NativePointer) : Managed(ptr, _FinalizerH
         }
     }
 
+    fun getNativeImagePtr(): NativePointer {
+        return _nGetNativeImagePtr(_ptr)
+    }
+
     private object _FinalizerHolder {
         val PTR = Bitmap_nGetFinalizer()
     }
@@ -1271,6 +1275,9 @@ private external fun _nReadPixels(
     resultBytes: InteropPointer
 ): Boolean
 
+@ExternalSymbolName("org_jetbrains_skia_Bitmap__1nGetNativeImagePtr")
+@ModuleImport("./skiko.mjs", "org_jetbrains_skia_Bitmap__1nGetNativeImagePtr")
+private external fun _nGetNativeImagePtr(ptr: NativePointer): NativePointer
 
 @ExternalSymbolName("org_jetbrains_skia_Bitmap__1nExtractAlpha")
 @ModuleImport("./skiko.mjs", "org_jetbrains_skia_Bitmap__1nExtractAlpha")

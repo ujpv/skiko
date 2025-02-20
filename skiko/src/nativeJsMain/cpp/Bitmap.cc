@@ -40,6 +40,12 @@ SKIKO_EXPORT void org_jetbrains_skia_Bitmap__1nGetImageInfo
   skija::ImageInfo::writeImageInfoForInterop(imageInfo, imageInfoResult, colorSpacePtrsArray);
 }
 
+extern "C" JNIEXPORT jlong JNICALL org_jetbrains_skia_Bitmap__1nGetNativeImagePtr
+        (JNIEnv* env, jclass jclass, jlong ptr) {
+    SkBitmap* instance = reinterpret_cast<SkBitmap*>(static_cast<uintptr_t>(ptr));
+    return reinterpret_cast<jlong>(instance->getPixels());
+}
+
 #if 0
 SKIKO_EXPORT KInteropPointer org_jetbrains_skia_Bitmap__1nGetImageInfo
   (KNativePointer ptr) {

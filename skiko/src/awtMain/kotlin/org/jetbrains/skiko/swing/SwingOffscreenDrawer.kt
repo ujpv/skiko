@@ -1,5 +1,8 @@
 package org.jetbrains.skiko.swing
 
+import com.jetbrains.JBR
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skiko.toBufferedImage
 import java.awt.*
 import java.awt.geom.AffineTransform
 import java.awt.image.*
@@ -15,8 +18,6 @@ internal class SwingOffscreenDrawer(
 ) {
     @Volatile
     private var volatileImage: VolatileImage? = null
-    private var bufferedImage: BufferedImage? = null
-    private var bufferedImageGraphics: Graphics2D? = null
 
     /**
      * Draws rendered image that is represented by [bytes] on [g].
@@ -29,75 +30,24 @@ internal class SwingOffscreenDrawer(
      * @param width width of rendered picture in real pixels
      * @param height height of rendered picture in real pixels
      */
-    fun draw(g: Graphics2D, bytes: ByteArray, width: Int, height: Int) {
-        val dirtyRectangles = listOf(
-            Rectangle(0, 0, width, height)
-        )
-        val image = createImageFromBytes(bytes, width, height, dirtyRectangles)
-        var vi = volatileImage
+    fun draw(g: Graphics2D, bitmap: Bitmap, width: Int, height: Int) {
+        if (width <= 0 || height <= 0) {
+            return
+        }
+        drawVolatileImage(g, bitmap)
+    }
+
+    fun drawVolatileImage(g: Graphics2D, bitmap: Bitmap) {
+        if (volatileImage == null ||
+            volatileImage?.width != bitmap.width || volatileImage?.height != bitmap.height ||
+            volatileImage!!.validate(g.deviceConfiguration) == VolatileImage.IMAGE_INCOMPATIBLE) {
+            volatileImage = g.deviceConfiguration.createCompatibleVolatileImage(bitmap.width, bitmap.height, Transparency.TRANSLUCENT)
+        }
 
         do {
-            if (vi == null || vi.width != swingLayerProperties.width || vi.height != swingLayerProperties.height) {
-                vi = createVolatileImage(image)
-            }
-            drawVolatileImage(vi, image)
-            when (vi.validate(swingLayerProperties.graphicsConfiguration)) {
-                VolatileImage.IMAGE_RESTORED -> drawVolatileImage(vi, image)
-                VolatileImage.IMAGE_INCOMPATIBLE -> vi = createVolatileImage(image)
-            }
-            g.drawImage(vi, 0, 0, null)
-        } while (vi!!.contentsLost())
-
-        volatileImage = vi
-    }
-
-    private fun createImageFromBytes(
-        bytes: ByteArray,
-        width: Int,
-        height: Int,
-        dirtyRectangles: List<Rectangle>
-    ): BufferedImage {
-        val src = ByteBuffer.wrap(bytes)
-        if (bufferedImage == null || bufferedImage?.width != width || bufferedImage?.height != height) {
-            bufferedImage?.flush()
-            bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE)
-            bufferedImageGraphics = bufferedImage?.createGraphics()
-        } else {
-            bufferedImageGraphics?.clearRect(0,0, width, height)
-        }
-        val image = bufferedImage!!
-
-        val dstData = (image.raster.dataBuffer as DataBufferInt).data
-        val srcData: IntBuffer = src.order(ByteOrder.LITTLE_ENDIAN).asIntBuffer()
-        for (rect in dirtyRectangles) {
-            if (rect.width < image.width) {
-                for (line in rect.y until rect.y + rect.height) {
-                    val offset: Int = line * image.width + rect.x
-                    srcData.position(offset)[dstData, offset, min(
-                        rect.width.toDouble(),
-                        (src.capacity() - offset).toDouble()
-                    ).toInt()]
-                }
-            } else { // optimized for a buffer wide dirty rect
-                val offset: Int = rect.y * image.width
-                srcData.position(offset)[dstData, offset, min(
-                    (rect.height * image.width).toDouble(),
-                    (src.capacity() - offset).toDouble()
-                ).toInt()]
-            }
-        }
-
-        return image
-    }
-
-    private fun createVolatileImage(image: BufferedImage): VolatileImage {
-        val vi = swingLayerProperties.graphicsConfiguration.createCompatibleVolatileImage(
-            swingLayerProperties.width,
-            swingLayerProperties.height,
-            Transparency.TRANSLUCENT
-        )
-        drawVolatileImage(vi, image)
-        return vi
+            JBR.getNativeRasterLoader().loadNativeRaster(volatileImage, bitmap.getNativeImagePtr(), bitmap.width, bitmap.height, 0, 0)
+            g.drawImage(volatileImage, 0, 0, null)
+        } while (volatileImage!!.contentsLost())
     }
 
     private fun drawVolatileImage(vi: VolatileImage, image: BufferedImage) {

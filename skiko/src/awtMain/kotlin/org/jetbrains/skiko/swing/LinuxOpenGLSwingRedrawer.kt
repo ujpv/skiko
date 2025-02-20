@@ -101,7 +101,7 @@ internal class LinuxOpenGLSwingRedrawer(
 
         val successfulRead = storage.readPixels(bytesToDraw, dstRowBytes = dstRowBytes)
         if (successfulRead) {
-            swingOffscreenDrawer.draw(g, bytesToDraw, width, height)
+//            swingOffscreenDrawer.draw(g, bytesToDraw, width, height)
         }
     }
 

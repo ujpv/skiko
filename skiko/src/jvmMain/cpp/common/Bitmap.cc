@@ -285,3 +285,9 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_skia_BitmapKt__1nMakeShade
     sk_sp<SkShader> shader = instance->makeShader(static_cast<SkTileMode>(tmx), static_cast<SkTileMode>(tmy), skija::SamplingMode::unpackFrom2Ints(env, samplingModeVal1, samplingModeVal2), localMatrix.get());
     return reinterpret_cast<jlong>(shader.release());
 }
+
+extern "C" JNIEXPORT jlong JNICALL Java_org_jetbrains_skia_BitmapKt__1nGetNativeImagePtr
+  (JNIEnv* env, jclass jclass, jlong ptr) {
+    SkBitmap* instance = reinterpret_cast<SkBitmap*>(static_cast<uintptr_t>(ptr));
+    return ptrToJlong(instance->getPixels());
+}

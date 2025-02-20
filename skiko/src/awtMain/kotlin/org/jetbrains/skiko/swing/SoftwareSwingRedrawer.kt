@@ -58,7 +58,7 @@ internal class SoftwareSwingRedrawer(
         val height = storage.height
         val bytes = storage.readPixels(storage.imageInfo, (width * 4), 0, 0)
         if (bytes != null) {
-            swingOffscreenDrawer.draw(g, bytes, width, height)
+//            swingOffscreenDrawer.draw(g, bytes, width, height)
         }
     }
 }
