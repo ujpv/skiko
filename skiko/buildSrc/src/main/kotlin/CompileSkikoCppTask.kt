@@ -193,6 +193,28 @@ abstract class CompileSkikoCppTask() : AbstractSkikoNativeToolTask() {
                     appendLine("]")
                 }
                 Files.writeString(outDir.toPath().resolve("compile_commands.json"), compileCommands)
+            } else if (compiler.get().contains("cl.exe")) {
+                val compileCommands = buildString {
+                    appendLine("[")
+                    for ((sourceFile, outputFile) in sourceOutputPairs) {
+                        val fileRelativePath = outputFile.parentFile.relativeTo(outDir).path + "/"
+                        val compileCommand = Files.readString(
+                            Path.of(argFilesDir.absolutePath, fileRelativePath + outputFile.nameWithoutExtension + "-args.txt"))
+                            .replace("\n", " ")
+                            .replace("\"", "\\\"")
+
+                        val item = """
+                            {
+                              "directory": "${outDir.absolutePath.replace("\\", "\\\\")}",
+                              "command": "\"${compiler.get().replace("\\", "\\\\")}\" $compileCommand",
+                              "file": "${sourceFile.absolutePath.replace("\\", "\\\\")}"
+                            },
+                        """.trimIndent().prependIndent("  ")
+                        appendLine(item)
+                    }
+                    appendLine("]")
+                }
+                Files.writeString(outDir.toPath().resolve("compile_commands.json"), compileCommands)
             }
         }
     }
