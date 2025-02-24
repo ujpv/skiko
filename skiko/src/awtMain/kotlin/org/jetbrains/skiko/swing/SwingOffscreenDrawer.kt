@@ -12,6 +12,12 @@ internal class SwingOffscreenDrawer(
     @Volatile
     private var volatileImage: VolatileImage? = null
 
+    init {
+        if (!JBR.isNativeRasterLoaderSupported()) {
+            throw RuntimeException("Native raster loader is not supported")
+        }
+    }
+
     /**
      * Draws rendered image that is represented by [bytes] on [g].
      *
@@ -38,7 +44,8 @@ internal class SwingOffscreenDrawer(
         }
 
         do {
-            JBR.getNativeRasterLoader().loadNativeRaster(volatileImage, bitmap.getNativeImagePtr(), bitmap.width, bitmap.height, 0, 0)
+            val nativeRasterLoader = JBR.getNativeRasterLoader()
+            nativeRasterLoader.loadNativeRaster(volatileImage, bitmap.getNativeImagePtr(), bitmap.width, bitmap.height, 0, 0)
             g.drawImage(volatileImage, 0, 0, null)
         } while (volatileImage!!.contentsLost())
     }

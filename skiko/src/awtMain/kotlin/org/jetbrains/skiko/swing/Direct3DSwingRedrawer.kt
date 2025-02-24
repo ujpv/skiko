@@ -31,6 +31,7 @@ internal class Direct3DSwingRedrawer(
     }
 
     private val device = createDirectXOffscreenDevice(adapter)
+    private val storage = Bitmap()
 
     private val swingOffscreenDrawer = SwingOffscreenDrawer(swingLayerProperties)
 
@@ -88,17 +89,30 @@ internal class Direct3DSwingRedrawer(
     fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = false)
 
-        val bytesArraySize = surface.width * surface.height * 4
-        if (bytesToDraw.size != bytesArraySize) {
-            bytesToDraw = ByteArray(bytesArraySize)
+        val width = surface.width
+        val height = surface.height
+        if (width == 0 || height == 0) {
+            return
         }
 
-        waitForCompletion(device, texturePtr)
-        if(!readPixels(texturePtr, bytesToDraw)) {
-            throw RenderException("Couldn't read pixels")
+        if (storage.width != width || storage.height != height) {
+            storage.allocPixelsFlags(ImageInfo.makeS32(width, height, ColorAlphaType.PREMUL), false)
         }
+
+        surface.readPixels(storage, 0, 0)
+        swingOffscreenDrawer.draw(g, storage, width, height)
+//        val bytesArraySize = surface.width * surface.height * 4
+//        if (bytesToDraw.size != bytesArraySize) {
+//            bytesToDraw = ByteArray(bytesArraySize)
+//        }
+//
+//        waitForCompletion(device, texturePtr)
+//        if(!readPixels(texturePtr, bytesToDraw)) {
+//            throw RenderException("Couldn't read pixels")
+//        }
 
 //        swingOffscreenDrawer.draw(g, bytesToDraw, surface.width, surface.height)
+
     }
 
     private fun makeRenderTarget() = BackendRenderTarget(
