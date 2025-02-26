@@ -39,6 +39,10 @@ internal class MetalSwingRedrawer(
         onContextInit()
     }
 
+    val profiler = Profiler()
+
+    var lastTimeReported = System.currentTimeMillis()
+
     override fun dispose() {
         disposeMetalTexture(texturePtr)
         context.close()
@@ -49,6 +53,8 @@ internal class MetalSwingRedrawer(
     override fun onRender(g: Graphics2D, width: Int, height: Int, nanoTime: Long) {
         autoreleasepool {
             autoCloseScope {
+                profiler.onFrameBegin()
+                profiler.onRenderBegin()
                 texturePtr = makeMetalTexture(adapter.ptr, texturePtr, width, height)
                 val renderTarget = makeRenderTarget().autoClose()
                 val surface = Surface.makeFromBackendRenderTarget(
@@ -64,13 +70,18 @@ internal class MetalSwingRedrawer(
                 canvas.clear(Color.TRANSPARENT)
                 renderDelegate.onRender(canvas, width, height, nanoTime)
                 flush(surface, g)
+                profiler.onFrameEnd()
             }
         }
+        profiler.printEvery10Sec()
     }
 
     private fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = true)
+        profiler.onRenderEnd()
+        profiler.onDrawBegin()
         getSwingDrawer().draw(g, surface, texture = texturePtr)
+        profiler.onDrawEnd()
     }
 
     override fun rendererInfo(): String {
