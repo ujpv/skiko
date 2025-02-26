@@ -42,8 +42,8 @@ open class ClocksAwt(private val scaleProvider: () -> Float) : SkikoRenderDelega
           strokeWidth = 1f
         }
         val watchFillHover = Paint().apply { color = 0xFFE4FF01.toInt() }
-        for (x in 0 .. 49 step 50) {
-            for (y in 20 .. 49 step 50) {
+        for (x in 0 .. (width - 50) step 50) {
+            for (y in 20 .. (height - 50) step 50) {
                 val hover = xpos > x + 0 && xpos < x + 50 && ypos > y + 0 && ypos < y + 50
                 val fill = if (hover) watchFillHover else watchFill
                 val stroke = if (x > width / 2) watchStrokeAA else watchStroke
