@@ -27,6 +27,7 @@ internal class LinuxOpenGLSwingRedrawer(
     private val storage = Bitmap()
 
     private var bytesToDraw = ByteArray(0)
+    private var profiler = Profiler()
 
     init {
         onContextInit()
@@ -48,6 +49,8 @@ internal class LinuxOpenGLSwingRedrawer(
         startRendering(offScreenContextPtr, offScreenBufferPtr)
         try {
             autoCloseScope {
+                profiler.onFrameBegin()
+                profiler.onRenderBegin()
                 // TODO: reuse texture
                 val texturePtr = createAndBindTexture(width, height)
                 if (texturePtr == 0L) {
@@ -79,6 +82,8 @@ internal class LinuxOpenGLSwingRedrawer(
                 renderDelegate.onRender(canvas, width, height, nanoTime)
                 flush(surface, g)
                 unbindAndDisposeTexture(texturePtr)
+                profiler.onFrameEnd()
+                profiler.printEvery10Sec()
             }
         } finally {
             finishRendering(offScreenContextPtr)
@@ -87,6 +92,8 @@ internal class LinuxOpenGLSwingRedrawer(
 
     private fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = true)
+        profiler.onRenderEnd()
+        profiler.onDrawBegin()
 
         val width = surface.width
         val height = surface.height
@@ -103,6 +110,7 @@ internal class LinuxOpenGLSwingRedrawer(
         if (successfulRead) {
             swingOffscreenDrawer.draw(g, bytesToDraw, width, height)
         }
+        profiler.onDrawEnd()
     }
 
     /**
