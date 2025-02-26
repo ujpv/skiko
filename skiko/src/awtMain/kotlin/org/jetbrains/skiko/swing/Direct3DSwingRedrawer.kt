@@ -41,6 +41,7 @@ internal class Direct3DSwingRedrawer(
 
     private var texturePtr: Long = 0
     private var bytesToDraw = ByteArray(0)
+    private val profiler = Profiler("DirectX12")
 
     init {
         onContextInit()
@@ -56,6 +57,9 @@ internal class Direct3DSwingRedrawer(
 
     override fun onRender(g: Graphics2D, width: Int, height: Int, nanoTime: Long) {
         autoCloseScope {
+            profiler.setSize(width, height)
+            profiler.onFrameBegin()
+            profiler.onRenderBegin()
             // We will have [Surface] with width == [alignedWidth],
             // but imitate (for SkikoRenderDelegate and Swing) like it has width == [width].
             val alignedWidth = alignedTextureWidth(width)
@@ -79,14 +83,21 @@ internal class Direct3DSwingRedrawer(
             canvas.clear(Color.TRANSPARENT)
             renderDelegate.onRender(canvas, width, height, nanoTime)
             flush(surface, g)
+            profiler.onFrameEnd()
         }
+        profiler.printEvery10Sec()
     }
 
     fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = false)
+
         waitForCompletion(device, texturePtr)
+        profiler.onRenderEnd()
+        profiler.onDrawBegin()
 
         getSwingDrawer().draw(g, surface, texture = texturePtr)
+        profiler.onDrawEnd()
+
     }
 
     private fun makeRenderTarget() = BackendRenderTarget(
