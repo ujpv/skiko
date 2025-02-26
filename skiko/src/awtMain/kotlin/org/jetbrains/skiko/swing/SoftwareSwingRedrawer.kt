@@ -29,6 +29,7 @@ internal class SoftwareSwingRedrawer(
     }
 
     private val storage = Bitmap()
+    private val profiler = Profiler()
 
     init {
         onContextInit()
@@ -40,6 +41,8 @@ internal class SoftwareSwingRedrawer(
     }
 
     override fun onRender(g: Graphics2D, width: Int, height: Int, nanoTime: Long) = autoCloseScope {
+        profiler.onFrameBegin()
+        profiler.onRenderBegin()
         if (storage.width != width || storage.height != height) {
             storage.allocPixelsFlags(ImageInfo.makeS32(width, height, ColorAlphaType.PREMUL), false)
         }
@@ -53,11 +56,15 @@ internal class SoftwareSwingRedrawer(
 
         surface.canvas.clear(Color.TRANSPARENT)
         renderDelegate.onRender(surface.canvas, width, height, nanoTime)
-
+        profiler.onRenderEnd()
         flush(g, surface)
+        profiler.onFrameEnd()
+        profiler.printEvery10Sec()
     }
 
     private fun flush(g: Graphics2D, surface: Surface) = autoCloseScope() {
+        profiler.onDrawBegin()
         getSwingDrawer().draw(g, surface, texture = 0)
+        profiler.onDrawEnd()
     }
 }
