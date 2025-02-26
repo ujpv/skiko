@@ -1,6 +1,6 @@
 package org.jetbrains.skiko.swing
 
-class Profiler {
+class Profiler(val name: String = "Unknown") {
     var firstFrameTimeNs: Long = 0L
     var lastFrameTimeNs: Long = 0L
     var countFrames: Int = 0
@@ -14,6 +14,9 @@ class Profiler {
     var totalDrawTimeNs: Long = 0L
 
     var lastTimeReportNs: Long = 0L
+
+    var width: Int = 0
+    var height: Int = 0
 
     fun onFrameBegin() {
         val nowNs = System.nanoTime()
@@ -52,9 +55,16 @@ class Profiler {
         return countFrames / timeSec
     }
 
+    fun setSize(width: Int, height: Int) {
+        this.width = width
+        this.height = height
+    }
+
     fun printEvery10Sec() {
         if (System.nanoTime() - lastTimeReportNs > 10_000_000_000 && countFrames > 0 && lastFrameTimeNs - firstFrameTimeNs > 1_000_000_000) {
             lastTimeReportNs = System.nanoTime()
+            println("Profiler: ${name}")
+            println("Image: $width x $height")
             println("FPS: ${getFSP()}")
             println("Average render time: ${totalRenderTimeNs.toDouble() / 1_000_000 / countFrames.toDouble()} ms")
             println("Average draw time: ${totalDrawTimeNs.toDouble() / 1_000_000 / countFrames.toDouble()}")

@@ -31,6 +31,7 @@ internal class Direct3DSwingRedrawer(
     }
 
     private val device = createDirectXOffscreenDevice(adapter)
+    private val profiler = Profiler("DirectX12")
 
     private val swingOffscreenDrawer = SwingOffscreenDrawer(swingLayerProperties)
 
@@ -60,7 +61,10 @@ internal class Direct3DSwingRedrawer(
     override fun onRender(g: Graphics2D, width: Int, height: Int, nanoTime: Long) {
         autoCloseScope {
             // We will have [Surface] with width == [alignedWidth],
-            // but imitate (for SkikoRenderDelegate and Swing) like it has width == [width].
+            // but imitate (for SkikoRenderDelegate and Swing) like it has width == [width]
+            profiler.setSize(width, height)
+            profiler.onFrameBegin()
+            profiler.onRenderBegin()
             val alignedWidth = alignedTextureWidth(width)
 
             texturePtr = makeDirectXTexture(device, texturePtr, alignedWidth, height)
@@ -82,12 +86,16 @@ internal class Direct3DSwingRedrawer(
             canvas.clear(Color.TRANSPARENT)
             renderDelegate.onRender(canvas, width, height, nanoTime)
             flush(surface, g)
+            profiler.onFrameEnd()
         }
+
+        profiler.printEvery10Sec()
     }
 
     fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = false)
-
+        profiler.onRenderEnd()
+        profiler.onDrawBegin()
         val bytesArraySize = surface.width * surface.height * 4
         if (bytesToDraw.size != bytesArraySize) {
             bytesToDraw = ByteArray(bytesArraySize)
@@ -99,6 +107,7 @@ internal class Direct3DSwingRedrawer(
         }
 
         swingOffscreenDrawer.draw(g, bytesToDraw, surface.width, surface.height)
+        profiler.onDrawEnd()
     }
 
     private fun makeRenderTarget() = BackendRenderTarget(
