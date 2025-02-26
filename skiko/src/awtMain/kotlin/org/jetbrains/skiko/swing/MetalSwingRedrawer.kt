@@ -77,6 +77,7 @@ internal class MetalSwingRedrawer(
                 flush(surface, g)
             }
         }
+        profiler.printEvery10Sec()
     }
 
     private fun flush(surface: Surface, g: Graphics2D) {
