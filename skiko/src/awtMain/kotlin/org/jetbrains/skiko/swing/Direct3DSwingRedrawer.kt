@@ -94,6 +94,8 @@ internal class Direct3DSwingRedrawer(
 
     fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = false)
+        waitForCompletion(device, texturePtr)
+
         profiler.onRenderEnd()
         profiler.onDrawBegin()
         val bytesArraySize = surface.width * surface.height * 4
@@ -101,7 +103,6 @@ internal class Direct3DSwingRedrawer(
             bytesToDraw = ByteArray(bytesArraySize)
         }
 
-        waitForCompletion(device, texturePtr)
         if(!readPixels(texturePtr, bytesToDraw)) {
             throw RenderException("Couldn't read pixels")
         }
