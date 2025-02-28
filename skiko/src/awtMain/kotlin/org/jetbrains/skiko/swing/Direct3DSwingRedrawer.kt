@@ -31,7 +31,7 @@ internal class Direct3DSwingRedrawer(
     }
 
     private val device = createDirectXOffscreenDevice(adapter)
-    private val profiler = Profiler("DirectX12")
+    private val profiler = Profiler("DirectX12(base)")
 
     private val swingOffscreenDrawer = SwingOffscreenDrawer(swingLayerProperties)
 
