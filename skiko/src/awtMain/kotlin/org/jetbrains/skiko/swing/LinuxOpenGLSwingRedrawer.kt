@@ -27,7 +27,7 @@ internal class LinuxOpenGLSwingRedrawer(
     private val storage = Bitmap()
 
     private var bytesToDraw = ByteArray(0)
-    private var profiler = Profiler()
+    private var profiler = Profiler("LinuxOpenGL(base)")
 
     init {
         onContextInit()
@@ -49,6 +49,7 @@ internal class LinuxOpenGLSwingRedrawer(
         startRendering(offScreenContextPtr, offScreenBufferPtr)
         try {
             autoCloseScope {
+                profiler.setSize(width, height)
                 profiler.onFrameBegin()
                 profiler.onRenderBegin()
                 // TODO: reuse texture
