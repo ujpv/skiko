@@ -32,6 +32,7 @@ internal class Direct3DSwingRedrawer(
     private val device = createDirectXOffscreenDevice(adapter)
 
     private val painter: SwingPainter = SoftwareSwingPainter(swingLayerProperties)
+    private val profiler = Profiler("Direct3DSwingRedrawer: new")
 
     private val context = if (device == 0L) {
         throw RenderException("Failed to create DirectX12 device.")
@@ -59,6 +60,9 @@ internal class Direct3DSwingRedrawer(
 
     override fun onRender(g: Graphics2D, width: Int, height: Int, nanoTime: Long) {
         autoCloseScope {
+            profiler.setSize(width, height)
+            profiler.onFrameBegin()
+            profiler.onRenderBegin()
             // We will have [Surface] with width == [alignedWidth],
             // but imitate (for SkikoRenderDelegate and Swing) like it has width == [width].
             val alignedWidth = alignedTextureWidth(width)
@@ -82,14 +86,18 @@ internal class Direct3DSwingRedrawer(
             canvas.clear(Color.TRANSPARENT)
             renderDelegate.onRender(canvas, width, height, nanoTime)
             flush(surface, g)
+            profiler.onFrameEnd()
         }
+        profiler.printEvery10Sec()
     }
 
     fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = false)
         waitForCompletion(device, texturePtr)
-
+        profiler.onRenderEnd()
+        profiler.onDrawBegin()
         painter.paint(g, surface, texturePtr)
+        profiler.onDrawEnd()
     }
 
     private fun makeRenderTarget() = BackendRenderTarget(
