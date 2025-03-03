@@ -2,6 +2,7 @@ package org.jetbrains.skiko.swing
 
 import org.jetbrains.skia.*
 import org.jetbrains.skiko.*
+import org.jetbrains.skiko.redrawer.MetalRedrawer
 import java.awt.Graphics2D
 
 /**
@@ -38,6 +39,7 @@ internal class MetalSwingRedrawer(
     private val storage = Bitmap()
 
     private var bytesToDraw = ByteArray(0)
+    private val profiler = Profiler("MetalSwingRedrawer: Base")
 
     init {
         onContextInit()
@@ -57,6 +59,9 @@ internal class MetalSwingRedrawer(
     override fun onRender(g: Graphics2D, width: Int, height: Int, nanoTime: Long) {
         autoreleasepool {
             autoCloseScope {
+                profiler.setSize(width, height)
+                profiler.onFrameBegin()
+                profiler.onRenderBegin()
                 texturePtr = makeMetalTexture(adapter.ptr, texturePtr, width, height)
                 val renderTarget = makeRenderTarget().autoClose()
                 val surface = Surface.makeFromBackendRenderTarget(
@@ -72,13 +77,16 @@ internal class MetalSwingRedrawer(
                 canvas.clear(Color.TRANSPARENT)
                 renderDelegate.onRender(canvas, width, height, nanoTime)
                 flush(surface, g)
+                profiler.onFrameEnd()
             }
+            profiler.printEvery10Sec()
         }
     }
 
     private fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = true)
-
+        profiler.onRenderEnd()
+        profiler.onDrawBegin()
         val width = surface.width
         val height = surface.height
 
@@ -94,6 +102,7 @@ internal class MetalSwingRedrawer(
         if (successfulRead) {
             swingOffscreenDrawer.draw(g, bytesToDraw, width, height)
         }
+        profiler.onDrawEnd()
     }
 
     override fun rendererInfo(): String {
