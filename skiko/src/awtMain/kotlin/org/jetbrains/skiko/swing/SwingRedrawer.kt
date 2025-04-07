@@ -38,6 +38,7 @@ internal fun createSwingRedrawer(
         )
     }
     return when (hostOs) {
+//        OS.MacOS -> Java2DRedrawer(swingLayerProperties, renderDelegate, analytics)
         OS.MacOS -> MetalSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
         OS.Windows -> Direct3DSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
         OS.Linux -> LinuxOpenGLSwingRedrawer(swingLayerProperties, renderDelegate, analytics)

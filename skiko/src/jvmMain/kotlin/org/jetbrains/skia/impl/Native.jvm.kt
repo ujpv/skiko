@@ -37,7 +37,7 @@ actual abstract class Native actual constructor(ptr: NativePointer) {
     }
 
     init {
-        if (ptr == NullPointer) throw RuntimeException("Can't wrap nullptr")
+//        if (ptr == NullPointer) throw RuntimeException("Can't wrap nullptr")
         _ptr = ptr
     }
 }

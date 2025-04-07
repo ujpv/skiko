@@ -30,18 +30,26 @@ open class ClocksAwt(private val scaleProvider: () -> Float) : SkikoRenderDelega
         .setDefaultFontManager(FontMgr.default)
 
     override fun onRender(canvas: Canvas, width: Int, height: Int, nanoTime: Long) {
-        val watchFill = Paint().apply { color = 0xFFFFFFFF.toInt() }
+        val watchFill = Paint().apply {
+            color = 0xFFFFFFFF.toInt()
+//            isAntiAlias = false
+        }
         val watchStroke = Paint().apply {
                color = Color.RED
                mode = PaintMode.STROKE
                strokeWidth = 1f
+//            isAntiAlias = false
         }
         val watchStrokeAA = Paint().apply {
           color = 0xFF000000.toInt()
           mode = PaintMode.STROKE
           strokeWidth = 1f
+//            isAntiAlias = false
         }
-        val watchFillHover = Paint().apply { color = 0xFFE4FF01.toInt() }
+        val watchFillHover = Paint().apply {
+            color = 0xFFE4FF01.toInt()
+//            isAntiAlias = false
+        }
         for (x in 0 .. (width - 50) step 50) {
             for (y in 20 .. (height - 50) step 50) {
                 val hover = xpos > x + 0 && xpos < x + 50 && ypos > y + 0 && ypos < y + 50
@@ -78,21 +86,21 @@ open class ClocksAwt(private val scaleProvider: () -> Float) : SkikoRenderDelega
             }
         }
 
-        val text = "Frames: ${frame++}!"
-        val x = xpos.toFloat()
-        val y = ypos.toFloat()
-        canvas.drawString(text, x, y, font, paint)
+//        val text = "Frames: ${frame++}!"
+//        val x = xpos.toFloat()
+//        val y = ypos.toFloat()
+//        canvas.drawString(text, x, y, font, paint)
 
-        val style = ParagraphStyle().apply {
-            fontRastrSettings = FontRastrSettings(FontEdging.SUBPIXEL_ANTI_ALIAS, FontHinting.SLIGHT, true)
-        }
-        val paragraph = ParagraphBuilder(style, fontCollection)
-            .pushStyle(TextStyle().setColor(0xFF000000.toInt()))
-            .addText("JRE: ${System.getProperty("java.vendor")}, ${System.getProperty("java.runtime.version")} $currentSystemTheme")
-            .popStyle()
-            .build()
-        paragraph.layout(Float.POSITIVE_INFINITY)
-        paragraph.paint(canvas, 5f, 5f)
+//        val style = ParagraphStyle().apply {
+//            fontRastrSettings = FontRastrSettings(FontEdging.SUBPIXEL_ANTI_ALIAS, FontHinting.SLIGHT, true)
+//        }
+//        val paragraph = ParagraphBuilder(style, fontCollection)
+//            .pushStyle(TextStyle().setColor(0xFF000000.toInt()))
+//            .addText("JRE: ${System.getProperty("java.vendor")}, ${System.getProperty("java.runtime.version")} $currentSystemTheme")
+//            .popStyle()
+//            .build()
+//        paragraph.layout(Float.POSITIVE_INFINITY)
+//        paragraph.paint(canvas, 5f, 5f)
 
         // Alpha layers test
         val rectW = 100f
@@ -100,13 +108,13 @@ open class ClocksAwt(private val scaleProvider: () -> Float) : SkikoRenderDelega
         val scale = scaleProvider()
         val left = (width / scale - rectW) / 2f
         val top = (height / scale - rectH) / 2f
-        val pictureRecorder = PictureRecorder()
-        val pictureCanvas = pictureRecorder.beginRecording(
-            Rect.makeLTRB(left, top, left + rectW, top + rectH)
-        )
-        pictureCanvas.drawLine(left, top, left + rectW, top + rectH, Paint())
-        val picture = pictureRecorder.finishRecordingAsPicture()
-        canvas.drawPicture(picture, null, Paint())
+//        val pictureRecorder = PictureRecorder()
+//        val pictureCanvas = pictureRecorder.beginRecording(
+//            Rect.makeLTRB(left, top, left + rectW, top + rectH)
+//        )
+//        pictureCanvas.drawLine(left, top, left + rectW, top + rectH, Paint())
+//        val picture = pictureRecorder.finishRecordingAsPicture()
+//        canvas.drawPicture(picture, null, Paint())
         canvas.drawLine(left, top + rectH, left + rectW, top, Paint())
     }
 
