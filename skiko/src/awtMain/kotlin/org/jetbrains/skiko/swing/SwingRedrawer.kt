@@ -37,9 +37,17 @@ internal fun createSwingRedrawer(
             analytics
         )
     }
+
     return when (hostOs) {
         OS.MacOS -> MetalSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
-        OS.Windows -> Direct3DSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
+        OS.Windows -> {
+            when (renderApi) {
+                GraphicsApi.DIRECT3D -> WindowsOpenGLSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
+                GraphicsApi.OPENGL -> WindowsOpenGLSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
+                else -> SoftwareSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
+            }
+        }
+
         OS.Linux -> LinuxOpenGLSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
         else -> SoftwareSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
     }

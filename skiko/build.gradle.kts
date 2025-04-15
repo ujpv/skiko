@@ -50,6 +50,7 @@ allprojects {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     google()
 }
 
@@ -168,7 +169,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-                implementation("org.jetbrains.runtime:jbr-api:1.5.0")
+                implementation("com.jetbrains:jbr-api:SNAPSHOT")
             }
         }
         val commonTest by getting {

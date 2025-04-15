@@ -28,6 +28,7 @@ var targetArch = when (osArch) {
 
 val target = "${targetOs}-${targetArch}"
 
+////var version = "0.0.0-SNAPSHOT+debug"
 var version = "0.0.0-SNAPSHOT"
 if (project.hasProperty("skiko.version")) {
   version = project.properties["skiko.version"] as String
@@ -39,7 +40,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0")
     implementation("org.jetbrains.skiko:skiko-awt-runtime-$target:$version")
-    implementation("org.jetbrains.runtime:jbr-api:1.5.0")
+    implementation("com.jetbrains:jbr-api:SNAPSHOT")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }

@@ -21,7 +21,6 @@ internal class LinuxOpenGLSwingRedrawer(
         }
     }
 
-
     private var offScreenBufferPtr: Long = 0L
 
     private val storage = Bitmap()

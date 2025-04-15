@@ -1,5 +1,6 @@
 package org.jetbrains.skiko.swing
 
+import com.jetbrains.SharedTextures
 import org.jetbrains.skia.*
 import org.jetbrains.skiko.*
 import java.awt.Graphics2D
@@ -28,7 +29,7 @@ internal class MetalSwingRedrawer(
         }
 
         private fun createSwingPainter(swingLayerProperties: SwingLayerProperties): SwingPainter = try {
-            AcceleratedSwingPainter()
+            AcceleratedSwingPainter(SharedTextures.METAL_TEXTURE_TYPE)
         } catch (_ : RenderException) {
             SoftwareSwingPainter(swingLayerProperties)
         }
