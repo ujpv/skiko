@@ -7,9 +7,11 @@ import org.jetbrains.skiko.*
 import org.jetbrains.skiko.swing.SkiaSwingLayer
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 import java.awt.event.*
 import java.awt.RenderingHints
+import java.awt.Transparency
 import javax.swing.*
 import java.io.File
 import java.nio.file.Files
@@ -178,6 +180,14 @@ fun createWindow(title: String, exitOnClose: Boolean) = SwingUtilities.invokeLat
 //    skiaLayer.disableTitleBar(64f)
     window.pack()
     skiaLayer.paint(window.graphics)
+
+    for (device in GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices) {
+        if (device.defaultConfiguration.toString().contains("GL")) {
+            window.location = device.defaultConfiguration.bounds.location
+
+        }
+    }
+
     window.isVisible = true
 }
 

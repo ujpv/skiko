@@ -94,7 +94,7 @@ internal class WindowsOpenGLSwingRedrawer(
                 val surface = Surface.makeFromBackendRenderTarget(
                     directContext,
                     renderTarget,
-                    SurfaceOrigin.TOP_LEFT,
+                    SurfaceOrigin.BOTTOM_LEFT,
                     SurfaceColorFormat.BGRA_8888,
                     ColorSpace.sRGB,
                     SurfaceProps(pixelGeometry = PixelGeometry.UNKNOWN)
