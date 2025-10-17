@@ -135,7 +135,7 @@ abstract class CompileSkikoCppTask() : AbstractSkikoNativeToolTask() {
 
         val argFilesDir = compilerArgsRootDir.get().asFile
         cleanDirs(argFilesDir)
-        val commonArgsFile = argFilesDir.parentFile.resolve("common-args.txt")
+            val commonArgsFile = argFilesDir.parentFile.resolve("common-args.txt")
         args.createArgFile(commonArgsFile)
         logArgs("Compiler args", args, commonArgsFile)
 
@@ -213,6 +213,28 @@ abstract class CompileSkikoCppTask() : AbstractSkikoNativeToolTask() {
                               "directory": "${outDir.absolutePath.replace("\\", "\\\\")}",
                               "command": "\"${compiler.get().replace("\\", "\\\\")}\" $compileCommand",
                               "file": "${sourceFile.absolutePath.replace("\\", "\\\\")}"
+                            },
+                        """.trimIndent().prependIndent("  ")
+                        appendLine(item)
+                    }
+                    appendLine("]")
+                }
+                Files.writeString(outDir.toPath().resolve("compile_commands.json"), compileCommands)
+            } else if (compiler.get().contains("g++")) {
+                val compileCommands = buildString {
+                    appendLine("[")
+                    for ((sourceFile, outputFile) in sourceOutputPairs) {
+                        val fileRelativePath = outputFile.parentFile.relativeTo(outDir).path + "/"
+                        val compileCommand = Files.readString(
+                            Path.of(argFilesDir.absolutePath, fileRelativePath + outputFile.nameWithoutExtension + "-args.txt"))
+                            .replace("\n", " ")
+                            .trim()
+
+                        val item = """
+                            {
+                              "directory": "${outDir.absolutePath}",
+                              "command": "${compiler.get()} $compileCommand",
+                              "file": "${sourceFile.absolutePath}"
                             },
                         """.trimIndent().prependIndent("  ")
                         appendLine(item)
