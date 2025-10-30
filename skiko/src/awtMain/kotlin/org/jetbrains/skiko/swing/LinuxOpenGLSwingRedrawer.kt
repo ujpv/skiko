@@ -28,6 +28,8 @@ internal class LinuxOpenGLSwingRedrawer(
 
     private var bytesToDraw = ByteArray(0)
 
+    private val profiler = Profiler("LinuxOpenGLSwingRedrawer")
+
     init {
         onContextInit(null)
     }
@@ -42,6 +44,8 @@ internal class LinuxOpenGLSwingRedrawer(
     }
 
     override fun onRender(g: Graphics2D, width: Int, height: Int, nanoTime: Long) {
+        profiler.onFrameBegin()
+        profiler.onBegin("Render")
         offScreenBufferPtr = makeOffScreenBuffer(offScreenContextPtr, offScreenBufferPtr, width, height)
         if (offScreenBufferPtr == 0L) {
             throw RenderException("Cannot create offScreen OpenGL buffer")
@@ -84,11 +88,15 @@ internal class LinuxOpenGLSwingRedrawer(
         } finally {
             finishRendering(offScreenContextPtr)
         }
+
+        profiler.onFrameEnd()
+
+        profiler.printEvery10Sec()
     }
 
     private fun flush(surface: Surface, g: Graphics2D) {
         surface.flushAndSubmit(syncCpu = true)
-        painter.paint(g, surface, 0)
+        painter.paint(g, surface, 0, profiler)
     }
 
     /**

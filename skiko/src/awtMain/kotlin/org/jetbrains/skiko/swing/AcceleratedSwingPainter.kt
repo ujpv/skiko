@@ -21,7 +21,7 @@ internal class AcceleratedSwingPainter : SwingPainter {
     private var gc: GraphicsConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment()
         .defaultScreenDevice.defaultConfiguration
 
-    override fun paint(g: Graphics2D, surface: Surface, texture: Long) {
+    override fun paint(g: Graphics2D, surface: Surface, texture: Long, profiler: Profiler?) {
         if (g.deviceConfiguration != gc || texturePtr != texture || imageWrapper == null) {
             gc = g.deviceConfiguration
             texturePtr = texture

@@ -2,6 +2,7 @@ package org.jetbrains.skiko.swing
 
 import org.jetbrains.skiko.*
 import java.awt.Graphics2D
+import java.util.Locale.getDefault
 
 /**
  * Provides an interface for requesting content to be drawn on a [java.awt.Graphics2D].
@@ -40,7 +41,10 @@ internal fun createSwingRedrawer(
     return when (hostOs) {
         OS.MacOS -> MetalSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
         OS.Windows -> Direct3DSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
-        OS.Linux -> LinuxOpenGLSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
+        OS.Linux -> if (System.getProperty("skiko.vulkan.enabled", "false").lowercase(getDefault()) == "true")
+            LinuxVulkanRedrawer(swingLayerProperties, renderDelegate, analytics) else
+            LinuxOpenGLSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
+
         else -> SoftwareSwingRedrawer(swingLayerProperties, renderDelegate, analytics)
     }
 }

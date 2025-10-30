@@ -19,17 +19,25 @@ internal class SoftwareSwingPainter(
     private var bufferedImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE)
     private var bitmap = Bitmap()
 
-    override fun paint(g: Graphics2D, surface: Surface, texture: Long) {
+    override fun paint(g: Graphics2D, surface: Surface, texture: Long, profiler: Profiler?) {
         val width = surface.width
         val height = surface.height
         if (bitmap.width != width || bitmap.height != height) {
             bitmap.allocPixelsFlags(ImageInfo.makeS32(width, height, ColorAlphaType.PREMUL), false)
         }
-
+        profiler?.onBegin("Readback")
         surface.readPixels(bitmap, 0, 0)
         val bufferPtr = bitmap.peekPixels()?.addr ?: throw RenderException("Can't get pixels address")
         bufferedImage = createImageFromBytes(bufferPtr, width, height)
+        profiler?.onEnd("Readback")
+        profiler?.onEnd("Render")
+        profiler?.onBegin("Paint")
         drawImage(g, bufferedImage)
+        profiler?.onEnd("Paint")
+    }
+
+    fun paint(g: Graphics2D, image: Image) {
+        drawImage(g, image)
     }
 
     override fun dispose() {

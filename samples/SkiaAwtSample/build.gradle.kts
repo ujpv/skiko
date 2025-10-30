@@ -29,6 +29,7 @@ var targetArch = when (osArch) {
 val target = "${targetOs}-${targetArch}"
 
 var version = "0.0.0-SNAPSHOT"
+//var version = "0.0.0-SNAPSHOT+debug"
 if (project.hasProperty("skiko.version")) {
   version = project.properties["skiko.version"] as String
 }

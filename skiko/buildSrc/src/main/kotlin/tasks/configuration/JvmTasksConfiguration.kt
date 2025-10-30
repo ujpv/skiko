@@ -66,6 +66,7 @@ fun SkikoProjectContext.createCompileJvmBindingsTask(
     includeHeadersNonRecursive(projectDir.resolve("src/jvmMain/cpp/common"))
     includeHeadersNonRecursive(projectDir.resolve("src/jvmMain/cpp/include"))
     includeHeadersNonRecursive(projectDir.resolve("src/commonMain/cpp/common/include"))
+//    includeHeadersNonRecursive(File("/usr/include"))
 
     compiler.set(compilerForTarget(targetOs, targetArch, isJvm = true))
 

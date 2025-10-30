@@ -9,6 +9,9 @@ import java.awt.Graphics2D
  * @see SoftwareSwingDrawer
  */
 internal interface SwingPainter {
-    fun paint(g: Graphics2D, surface: Surface, texture: Long)
+    fun paint(g: Graphics2D, surface: Surface, texture: Long) {
+        paint(g, surface, texture, null)
+    }
+    fun paint(g: Graphics2D, surface: Surface, texture: Long, profiler: Profiler?)
     fun dispose()
 }
